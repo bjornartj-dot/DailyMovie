@@ -41,7 +41,8 @@
             opacity: 0.03;
             z-index: 1;
             pointer-events: none;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9'%3E%3CfeDisplacementMap in='SourceGraphic' scale='50' xChannelSelector='R' yChannelSelector='G'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            background-size: 400px 400px;
         }
 
         .spotlight {
@@ -525,7 +526,7 @@
             'action': ['The Dark Knight', 'Mad Max: Fury Road', 'Inception', 'Die Hard', 'The Matrix'],
             'adventure': ['The Lord of the Rings: The Fellowship of the Ring', 'Indiana Jones and the Last Crusade', 'Jurassic Park', 'Pirates of the Caribbean', 'Avatar'],
             'comedy': ['The Grand Budapest Hotel', 'Parasite', 'Knives Out', 'Superbad', 'The Big Lebowski'],
-            'drama': ['The Shawshank Redemption', 'The Godfather', '12 Angry Men', 'Schindler\'s List', 'Forrest Gump'],
+            'drama': ['The Shawshank Redemption', 'The Godfather', '12 Angry Men', 'Schindler's List', 'Forrest Gump'],
             'horror': ['The Shining', 'Get Out', 'A Quiet Place', 'Hereditary', 'The Conjuring'],
             'thriller': ['Se7en', 'The Silence of the Lambs', 'No Country for Old Men', 'Prisoners', 'Gone Girl'],
             'sci-fi': ['Interstellar', 'Blade Runner 2049', 'The Matrix', '2001: A Space Odyssey', 'Arrival'],
@@ -593,7 +594,7 @@
             }
 
             const reasonText = isTodays 
-                ? `Denne filmen er spesielt valgt for deg i dag basert på høye ratings og kritiker-anmeldelser. Med en IMDB score på ${movieData.imdbRating} og Rotten Tomatoes på ${movieData.rottenTomatoes}, er dette en film du ikke vil gå glipp av!`
+                ? `Denne filmen er spesielt valgt for deg i dag basert på høye ratings og kritiker-anmeldelser. Med en IMDB score på ${movieData.imdbRating} og Rotten Tomatoes på ${movieData.rottenTomatoes}, er dette en must-watch.`
                 : `En av de best rangerte filmene i sin sjanger! Med imponerende ratings fra både IMDB (${movieData.imdbRating}) og Rotten Tomatoes (${movieData.rottenTomatoes}), er dette en kritiker-favoritt.`;
 
             movieCard.innerHTML = `
