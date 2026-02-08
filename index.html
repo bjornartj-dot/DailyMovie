@@ -1,41 +1,644 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="nb">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="styles.css">
-    <title>Daily Movie</title>
-    <style>
-        body {
-            background-image: url('your-complete-background-url'); /* Replace with actual URL */
-        }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dagens Film 🎬</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --burgundy:#6b1a1a;
+      --burgundy-dark:#4b1212;
+      --gold:#d4af37;
+      --gold-soft:#e6c76d;
+      --paper:#f7f1e3;
+      --ink:#120b0b;
+      --shadow: rgba(0,0,0,.35);
+      --muted: #c5bdb1;
+      --success: #2ca96b;
+      --warning: #e0a400;
+      --error: #c63c3c;
+    }
+
+    html,body{
+      margin:0;
+      height:100%;
+      background:#1a0f0f;
+      color:var(--paper);
+      font-family: "Crimson Text", serif;
+    }
+
+    /* Spotlight */
+    body::before{
+      content:"";
+      position:fixed; inset:0;
+      background: radial-gradient(1200px 800px at 50% 0%, rgba(255,255,255,.12), transparent 60%),
+                  radial-gradient(800px 600px at 20% 10%, rgba(255,255,255,.06), transparent 50%),
+                  radial-gradient(900px 700px at 80% 15%, rgba(255,255,255,.06), transparent 55%);
+      pointer-events:none;
+      z-index:-2;
+    }
+    /* Film grain */
+    body::after{
+      content:"";
+      position:fixed; inset:0;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="140" height="140"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23n)" opacity="0.04"/></svg>');
+      opacity:.7;
+      mix-blend-mode:screen;
+      pointer-events:none;
+      z-index:-1;
+    }
+
+    .container{
+      max-width:980px;
+      margin: clamp(16px, 4vw, 40px) auto;
+      padding: clamp(12px, 3vw, 24px);
+    }
+
+    header{
+      text-align:center;
+      margin-bottom:24px;
+    }
+    .title{
+      font-family:"Bebas Neue", sans-serif;
+      font-size: clamp(40px, 7vw, 84px);
+      letter-spacing: .05em;
+      color: var(--gold);
+      text-shadow: 0 2px 0 rgba(0,0,0,.35), 0 0 20px rgba(212,175,55,.2);
+      margin: 0 0 8px 0;
+    }
+    .subtitle{
+      color: var(--muted);
+      font-style: italic;
+      margin:0;
+      font-size: clamp(16px, 2.6vw, 22px);
+    }
+
+    .card{
+      background: linear-gradient(180deg, var(--burgundy) 0%, var(--burgundy-dark) 100%);
+      border: 1px solid rgba(212,175,55,.28);
+      border-radius: 16px;
+      box-shadow: 0 10px 28px var(--shadow), inset 0 0 0 1px rgba(255,255,255,.04);
+      overflow: clip;
+    }
+
+    .topbar{
+      display:flex; gap:12px; align-items:center; justify-content:space-between;
+      padding: 14px 16px;
+      background: rgba(0,0,0,.25);
+      border-bottom: 1px solid rgba(212,175,55,.18);
+    }
+
+    .btn{
+      appearance:none; border:none; cursor:pointer;
+      background: linear-gradient(180deg, var(--gold) 0%, var(--gold-soft) 100%);
+      color:#2b1e0d; font-weight:700;
+      padding: 12px 16px; border-radius: 10px;
+      box-shadow: 0 4px 0 #a7892a, 0 10px 18px rgba(0,0,0,.35);
+      transition: transform .08s ease, box-shadow .08s ease, filter .2s ease;
+      font-family: "Bebas Neue", sans-serif;
+      letter-spacing:.04em; font-size: 18px;
+    }
+    .btn:hover{ filter:brightness(1.06); }
+    .btn:active{ transform: translateY(2px); box-shadow: 0 2px 0 #a7892a, 0 6px 14px rgba(0,0,0,.35); }
+
+    .btn-outline{
+      background: transparent; color: var(--gold);
+      border: 1px solid var(--gold);
+      box-shadow: none; padding: 10px 14px; border-radius: 10px;
+    }
+    .btn-outline:hover{ background: rgba(212,175,55,.08); }
+
+    .bar-left, .bar-right{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+    .flex-spacer{ flex:1; }
+
+    .content{
+      display:grid; gap: 18px; grid-template-columns: 1fr;
+      padding: 16px;
+    }
+    @media (min-width: 820px){
+      .content{ grid-template-columns: 360px 1fr; }
+    }
+
+    .poster-wrap{
+      position:relative;
+      background: #0d0606;
+      border-radius: 12px;
+      overflow:hidden;
+      min-height: 520px;
+      display:flex; align-items:center; justify-content:center;
+      border:1px solid rgba(212,175,55,.16);
+    }
+    .poster{
+      width:100%; height:100%; object-fit:cover; display:block;
+      opacity:0; transform: scale(.98);
+      transition: opacity .4s ease, transform .4s ease;
+    }
+    .poster.loaded{ opacity:1; transform: scale(1); }
+    .placeholder{
+      color:#876; opacity:.7; font-style: italic; padding:14px; text-align:center;
+    }
+
+    .details{
+      padding: 8px;
+    }
+    h2{
+      font-family: "Bebas Neue", sans-serif;
+      font-size: clamp(28px, 4.5vw, 42px);
+      letter-spacing:.02em;
+      margin: 0 0 6px 0;
+      color: #ffe7a6;
+      text-shadow: 0 2px 0 rgba(0,0,0,.35);
+    }
+    .meta{
+      display:flex; flex-wrap:wrap; gap:8px 14px;
+      color: #f1e7d4;
+      opacity:.9;
+    }
+    .chips{ display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
+    .chip{
+      border:1px solid rgba(255,255,255,.12);
+      padding:4px 8px; border-radius: 999px; font-size:14px; opacity:.9;
+      background: rgba(0,0,0,.15);
+    }
+
+    .ratings{
+      display:grid; gap:10px; grid-template-columns: repeat(3, minmax(0, 1fr));
+      margin:14px 0;
+    }
+    .rate{
+      background: rgba(0,0,0,.25);
+      border: 1px solid rgba(212,175,55,.16);
+      border-radius: 10px; padding:10px;
+      text-align:center;
+    }
+    .rate .label{ color: var(--muted); font-size: 12px; }
+    .rate .value{ font-size: 22px; font-weight:700; margin-top:4px; }
+
+    .section-title{
+      font-family: "Bebas Neue", sans-serif; letter-spacing:.04em;
+      color: var(--gold); margin: 12px 0 6px;
+    }
+    .plot{ line-height:1.6; color:#f9f6f0; }
+
+    .actions{
+      display:flex; gap:12px; flex-wrap:wrap; margin-top:14px;
+    }
+
+    /* Modal */
+    .modal-backdrop{
+      position: fixed; inset:0; display:none;
+      background: rgba(0,0,0,.6); z-index: 50;
+      align-items:center; justify-content:center;
+      padding: 20px;
+    }
+    .modal{
+      width:min(680px, 100%);
+      background: linear-gradient(180deg, var(--burgundy) 0%, var(--burgundy-dark) 100%);
+      border:1px solid rgba(212,175,55,.24);
+      border-radius: 12px; box-shadow: 0 14px 36px rgba(0,0,0,.5);
+      padding: 14px;
+      transform: translateY(18px); opacity: 0;
+      transition: transform .2s ease, opacity .2s ease;
+    }
+    .modal-backdrop.show{ display:flex; }
+    .modal-backdrop.show .modal{ transform: translateY(0); opacity:1; }
+
+    .genre-grid{
+      display:grid; gap:10px; grid-template-columns: repeat(3, 1fr);
+    }
+    @media (min-width:660px){ .genre-grid{ grid-template-columns: repeat(4, 1fr);} }
+    .genre{
+      background: rgba(0,0,0,.18);
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 10px; padding:10px;
+      text-align:center; cursor:pointer; user-select:none;
+      transition: background .15s ease, transform .05s ease, border-color .15s ease;
+      font-weight:700; color:#ffe;
+    }
+    .genre:hover{ background: rgba(255,255,255,.08); }
+    .genre:active{ transform: translateY(1px); }
+    .genre.selected{
+      border-color: var(--gold);
+      box-shadow: inset 0 0 0 1px rgba(212,175,55,.25);
+    }
+
+    .kbd{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      background: rgba(0,0,0,.3);
+      border: 1px solid rgba(255,255,255,.18);
+      padding: 2px 6px; border-radius: 6px; font-size: .9em;
+    }
+
+    .notice{ color:#f4ecd9; opacity:.8; font-size: .95em; }
+    .ok{ color: var(--success); }
+    .warn{ color: var(--warning); }
+    .err{ color: var(--error); }
+
+    footer{
+      opacity:.7; text-align:center; margin-top:18px; font-size:.95em;
+    }
+  </style>
 </head>
 <body>
+  <div class="container">
     <header>
-        <h1>Welcome to Daily Movie</h1>
+      <h1 class="title">Dagens Film</h1>
+      <p class="subtitle">Foreslår dagens beste film basert på sjanger + IMDb / Rotten Tomatoes</p>
     </header>
-    <main>
-        <section id="movies">
-            <h2>Featured Movies</h2>
-            <p>Check out our latest features and updates!</p>
-        </section>
-    </main>
-    <footer>
-        <p>Contact us at: support@dailymovie.com</p>
-    </footer>
-    <script>
-        const movieList = [
-            { title: 'Movie Title 1', year: 2023 },
-            { title: 'Movie Title 2', year: 2023 }
-        ];
 
-        const moviesElement = document.getElementById('movies');
-        movieList.forEach(movie => {
-            const movieItem = document.createElement('div');
-            movieItem.innerHTML = `<h3>${movie.title}</h3><p>Year: ${movie.year}</p>`;
-            moviesElement.appendChild(movieItem);
-        });
-    </script>
+    <div class="card">
+      <div class="topbar">
+        <div class="bar-left">
+          <button id="btn-new" class="btn">🎲 Ny film</button>
+          <button id="btn-genre" class="btn-outline">🎛️ Velg sjanger <span class="kbd">G</span></button>
+        </div>
+        <div class="flex-spacer"></div>
+        <div class="bar-right">
+          <small id="status" class="notice">Klar</small>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="poster-wrap">
+          <img id="poster" class="poster" alt="Filmplakat" />
+          <div id="poster-ph" class="placeholder">Plakat vises her</div>
+        </div>
+
+        <div class="details">
+          <h2 id="title">—</h2>
+          <div class="meta" id="meta">—</div>
+          <div class="chips" id="chips"></div>
+
+          <div class="ratings">
+            <div class="rate">
+              <div class="label">IMDb</div>
+              <div id="r-imdb" class="value">—</div>
+            </div>
+            <div class="rate">
+              <div class="label">Rotten Tomatoes</div>
+              <div id="r-rt" class="value">—</div>
+            </div>
+            <div class="rate">
+              <div class="label">Metascore</div>
+              <div id="r-meta" class="value">—</div>
+            </div>
+          </div>
+
+          <h3 class="section-title">Handling</h3>
+          <p id="plot" class="plot">Trykk «Ny film» for å få forslag.</p>
+
+          <div class="actions">
+            <button id="btn-another" class="btn-outline">🔁 Gi meg et annet forslag</button>
+            <a id="link-imdb" class="btn-outline" href="#" target="_blank" rel="noopener">🔗 Åpne på IMDb</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <p>Laget i Norge • Retro-kino estetikk • Kilde: OMDb (IMDb/Rotten Tomatoes)</p>
+    </footer>
+  </div>
+
+  <!-- Sjanger-modal -->
+  <div id="modal-backdrop" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="genre-title">
+    <div class="modal">
+      <div class="topbar" style="border:none; background:transparent; padding:6px 6px 10px;">
+        <h3 id="genre-title" class="section-title" style="margin:0;">Velg sjanger</h3>
+        <div class="flex-spacer"></div>
+        <button id="btn-close-modal" class="btn-outline">Lukk</button>
+      </div>
+      <div class="genre-grid" id="genre-grid"></div>
+      <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:12px;">
+        <button id="btn-clear-genre" class="btn-outline">Fjern valg</button>
+        <button id="btn-apply-genre" class="btn">Bruk</button>
+      </div>
+      <p class="notice" style="margin-top:10px;">Tips: Trykk <span class="kbd">G</span> for å åpne sjanger-valget raskt.</p>
+    </div>
+  </div>
+
+  <script>
+    // ====== KONFIG ======
+    const OMDB_API_KEY = "2e9e79ae"; // Din nøkkel – vurder å rotere ved publisering
+    const OMDB_URL = "https://www.omdbapi.com/";
+
+    // Kuratert startliste pr. sjanger (fallback + variasjon)
+    const CURATED = {
+      "Action": ["Mad Max: Fury Road", "Die Hard", "John Wick", "The Dark Knight", "Gladiator"],
+      "Adventure": ["Raiders of the Lost Ark", "The Lord of the Rings: The Fellowship of the Ring", "Life of Pi", "Up"],
+      "Comedy": ["The Grand Budapest Hotel", "Superbad", "Groundhog Day", "Monty Python and the Holy Grail", "Amélie"],
+      "Drama": ["The Shawshank Redemption", "Parasite", "Whiplash", "Forrest Gump", "Fight Club"],
+      "Horror": ["Get Out", "A Quiet Place", "The Shining", "Hereditary", "It Follows"],
+      "Thriller": ["Se7en", "Zodiac", "Prisoners", "Gone Girl", "No Country for Old Men"],
+      "Sci-Fi": ["Blade Runner 2049", "Interstellar", "Ex Machina", "Arrival", "The Matrix"],
+      "Romance": ["La La Land", "Before Sunrise", "Pride and Prejudice", "The Notebook", "Call Me by Your Name"],
+      "Animation": ["Spirited Away", "Toy Story", "Coco", "Wall-E", "Into the Spider-Verse"],
+      "Fantasy": ["Pan's Labyrinth", "Harry Potter and the Prisoner of Azkaban", "The Princess Bride", "The Fellowship of the Ring"],
+      "Mystery": ["Knives Out", "The Prestige", "Oldboy", "Memento", "Shutter Island"],
+      "Crime": ["The Godfather", "Goodfellas", "City of God", "Heat", "The Departed"]
+    };
+
+    const ALL_GENRES = Object.keys(CURATED);
+
+    // Elementer
+    const el = {
+      btnNew: document.getElementById('btn-new'),
+      btnAnother: document.getElementById('btn-another'),
+      btnGenre: document.getElementById('btn-genre'),
+      status: document.getElementById('status'),
+      poster: document.getElementById('poster'),
+      posterPh: document.getElementById('poster-ph'),
+      title: document.getElementById('title'),
+      meta: document.getElementById('meta'),
+      chips: document.getElementById('chips'),
+      rImdb: document.getElementById('r-imdb'),
+      rRt: document.getElementById('r-rt'),
+      rMeta: document.getElementById('r-meta'),
+      plot: document.getElementById('plot'),
+      linkImdb: document.getElementById('link-imdb'),
+      // modal
+      modalBackdrop: document.getElementById('modal-backdrop'),
+      genreGrid: document.getElementById('genre-grid'),
+      btnCloseModal: document.getElementById('btn-close-modal'),
+      btnClearGenre: document.getElementById('btn-clear-genre'),
+      btnApplyGenre: document.getElementById('btn-apply-genre'),
+    };
+
+    let currentGenre = null;
+    let lastTitlesTried = [];
+    let currentData = null;
+
+    // ====== Genre modal ======
+    function openModal(){
+      el.modalBackdrop.classList.add('show');
+    }
+    function closeModal(){
+      el.modalBackdrop.classList.remove('show');
+    }
+    function buildGenreGrid(){
+      el.genreGrid.innerHTML = '';
+      ALL_GENRES.forEach(g => {
+        const item = document.createElement('div');
+        item.className = 'genre' + (g === currentGenre ? ' selected' : '');
+        item.textContent = g;
+        item.onclick = () => {
+          document.querySelectorAll('.genre').forEach(n => n.classList.remove('selected'));
+          item.classList.add('selected');
+          currentGenre = g;
+        };
+        el.genreGrid.appendChild(item);
+      });
+    }
+
+    // ====== Helpers ======
+    function setStatus(text, tone=''){
+      el.status.textContent = text;
+      el.status.classList.remove('ok','warn','err');
+      if(tone) el.status.classList.add(tone);
+    }
+
+    function seededRandom(seed){
+      // Simple xorshift32
+      let x = seed || 123456789;
+      x ^= x << 13; x ^= x >>> 17; x ^= x << 5;
+      // map to [0,1)
+      return (x >>> 0) / 4294967296;
+    }
+
+    function todaySeed(){
+      const d = new Date();
+      // Same recommendation per day globally
+      const y = d.getUTCFullYear();
+      const m = d.getUTCMonth()+1;
+      const day = d.getUTCDate();
+      return (y*10000 + m*100 + day) | 0;
+    }
+
+    function chooseTitleByDate(genre){
+      const pool = genre && CURATED[genre] ? CURATED[genre] : Object.values(CURATED).flat();
+      const seed = todaySeed();
+      const idx = Math.floor(seededRandom(seed) * pool.length);
+      return pool[idx];
+    }
+
+    function pickAlternative(genre){
+      const pool = genre && CURATED[genre] ? CURATED[genre] : Object.values(CURATED).flat();
+      const remaining = pool.filter(t => !lastTitlesTried.includes(t));
+      if(remaining.length === 0){
+        lastTitlesTried = [];
+        return pickAlternative(genre);
+      }
+      const idx = Math.floor(Math.random() * remaining.length);
+      return remaining[idx];
+    }
+
+    function parseTomato(ratings){
+      if(!Array.isArray(ratings)) return null;
+      const rt = ratings.find(r => (r.Source||"").toLowerCase().includes("rotten"));
+      // Return number (percentage) if format like "94%"
+      if(rt && typeof rt.Value === 'string' && rt.Value.endsWith('%')){
+        const n = parseInt(rt.Value.replace('%','').trim(), 10);
+        return isNaN(n) ? null : n;
+      }
+      return null;
+    }
+
+    function scoreFrom(omdb){
+      // Combine IMDb (0-10) and Rotten (0-100) to a normalized 0-100
+      const imdb = parseFloat(omdb.imdbRating) || null;
+      const rt = parseTomato(omdb.Ratings) || null;
+      const meta = parseInt(omdb.Metascore,10); // may be NaN
+
+      let parts = [];
+      if(imdb != null) parts.push(imdb * 10);
+      if(rt != null) parts.push(rt);
+      if(!isNaN(meta)) parts.push(meta);
+
+      if(parts.length === 0) return null;
+      // Weighted average: IMDb 0.4, RT 0.4, Meta 0.2 if all present; otherwise simple avg
+      if(parts.length === 3){
+        return Math.round((imdb*10)*0.4 + rt*0.4 + meta*0.2);
+      }
+      const avg = parts.reduce((a,b)=>a+b,0)/parts.length;
+      return Math.round(avg);
+    }
+
+    function setPoster(src){
+      el.poster.classList.remove('loaded');
+      el.posterPh.style.display = 'block';
+      if(!src || src === 'N/A'){
+        el.poster.removeAttribute('src');
+        return;
+      }
+      el.poster.onload = () => {
+        el.poster.classList.add('loaded');
+        el.posterPh.style.display = 'none';
+      };
+      el.poster.onerror = () => {
+        el.posterPh.style.display = 'block';
+      };
+      el.poster.src = src;
+    }
+
+    function updateUI(omdb){
+      currentData = omdb;
+      el.title.textContent = `${omdb.Title || '—'} ${omdb.Year ? '('+omdb.Year+')' : ''}`;
+
+      const metaBits = [];
+      if(omdb.Runtime && omdb.Runtime !== 'N/A') metaBits.push(omdb.Runtime);
+      if(omdb.Director && omdb.Director !== 'N/A') metaBits.push(`Regi: ${omdb.Director}`);
+      if(omdb.Genre && omdb.Genre !== 'N/A') metaBits.push(omdb.Genre);
+      el.meta.textContent = metaBits.join(' • ') || '—';
+
+      // Chips: skuespillere (første 3-4), språk, land
+      el.chips.innerHTML = '';
+      const chips = [];
+      if(omdb.Actors && omdb.Actors !== 'N/A'){
+        const actors = omdb.Actors.split(',').map(s=>s.trim()).slice(0,4);
+        actors.forEach(a => chips.push(a));
+      }
+      if(omdb.Language && omdb.Language !== 'N/A') chips.push(`Språk: ${omdb.Language}`);
+      if(omdb.Country && omdb.Country !== 'N/A') chips.push(`Land: ${omdb.Country}`);
+      chips.forEach(c=>{
+        const span = document.createElement('span');
+        span.className = 'chip';
+        span.textContent = c;
+        el.chips.appendChild(span);
+      });
+
+      // Ratings
+      const imdb = (parseFloat(omdb.imdbRating)||0) > 0 ? `${omdb.imdbRating}/10` : '—';
+      const rt = parseTomato(omdb.Ratings);
+      const meta = parseInt(omdb.Metascore,10);
+      el.rImdb.textContent = imdb;
+      el.rRt.textContent = (rt!=null) ? `${rt}%` : '—';
+      el.rMeta.textContent = (!isNaN(meta)) ? `${meta}` : '—';
+
+      // Plot
+      el.plot.textContent = (omdb.Plot && omdb.Plot !== 'N/A') ? omdb.Plot : 'Ingen beskrivelse tilgjengelig.';
+
+      // Poster
+      setPoster(omdb.Poster);
+
+      // IMDb link
+      const imdbId = omdb.imdbID;
+      el.linkImdb.href = imdbId ? `https://www.imdb.com/title/${imdbId}/` : '#';
+    }
+
+    async function fetchOMDbByTitle(title){
+      const url = new URL(OMDB_URL);
+      url.searchParams.set('apikey', OMDB_API_KEY);
+      url.searchParams.set('t', title);
+      url.searchParams.set('type', 'movie');
+      const res = await fetch(url.toString());
+      if(!res.ok) throw new Error('Nettverksfeil');
+      const data = await res.json();
+      if(data.Response === "False") throw new Error(data.Error || 'Fant ikke film');
+      return data;
+    }
+
+    async function tryTitles(titles){
+      for(const t of titles){
+        try{
+          setStatus(`Henter «${t}» …`);
+          const data = await fetchOMDbByTitle(t);
+          // Må passe sjanger hvis valgt (best-effort; OMDb.Genre er CSV)
+          if(currentGenre){
+            const g = (data.Genre || '').toLowerCase();
+            if(!g.includes(currentGenre.toLowerCase())){
+              // Ikke perfekt match – men aksepterer hvis ratingen er god
+              const sc = scoreFrom(data);
+              if(sc !== null && sc >= 75){
+                updateUI(data);
+                setStatus(`Foreslår: ${data.Title}`, 'ok');
+                return true;
+              }
+              continue;
+            }
+          }
+          updateUI(data);
+          setStatus(`Foreslår: ${data.Title}`, 'ok');
+          return true;
+        }catch(e){
+          // prøv neste
+        }
+      }
+      return false;
+    }
+
+    async function suggestToday(genre = null){
+      const seedTitle = chooseTitleByDate(genre);
+      lastTitlesTried = [seedTitle];
+
+      // Lag en rangert liste: seed + to alternativer fra samme sjanger
+      let candidates = [seedTitle];
+      const pool = genre && CURATED[genre] ? CURATED[genre] : Object.values(CURATED).flat();
+      // legg til opptil to andre titler som vi ikke har prøvd
+      while(candidates.length < 3){
+        const alt = pickAlternative(genre);
+        if(!candidates.includes(alt)) candidates.push(alt);
+      }
+
+      // Hent alle, beregn score, velg best
+      setStatus('Henter kandidater …');
+      const results = [];
+      for(const title of candidates){
+        try{
+          const data = await fetchOMDbByTitle(title);
+          results.push({title, data, score: scoreFrom(data) ?? 0});
+        }catch(e){ /* ignorér */ }
+      }
+      if(results.length === 0){
+        setStatus('Fant ingen filmer nå.', 'err');
+        return;
+      }
+      results.sort((a,b)=> b.score - a.score);
+      updateUI(results[0].data);
+      setStatus(`Dagens film: ${results[0].data.Title}`, 'ok');
+    }
+
+    async function another(genre = null){
+      // Velg en ny tittel som ikke er forsøkt
+      const t = pickAlternative(genre);
+      lastTitlesTried.push(t);
+      try{
+        setStatus(`Henter «${t}» …`);
+        const data = await fetchOMDbByTitle(t);
+        updateUI(data);
+        setStatus(`Forslag: ${data.Title}`, 'ok');
+      }catch(e){
+        setStatus('Klarte ikke hente forslag. Prøver et nytt …', 'warn');
+        // prøv en ny igjen
+        return another(genre);
+      }
+    }
+
+    // ====== Eventer ======
+    el.btnNew.addEventListener('click', ()=> suggestToday(currentGenre));
+    el.btnAnother.addEventListener('click', ()=> another(currentGenre));
+    el.btnGenre.addEventListener('click', ()=>{
+      buildGenreGrid();
+      openModal();
+    });
+    el.btnCloseModal.addEventListener('click', closeModal);
+    el.btnClearGenre.addEventListener('click', ()=>{ currentGenre=null; buildGenreGrid(); });
+    el.btnApplyGenre.addEventListener('click', ()=>{ closeModal(); suggestToday(currentGenre); });
+
+    // Tastatursnarvei: G
+    window.addEventListener('keydown', (e)=>{
+      if(e.key.toLowerCase() === 'g'){
+        buildGenreGrid();
+        openModal();
+      }
+    });
+
+    // Start: vis dagens forslag (uten sjanger)
+    suggestToday(null);
+  </script>
 </body>
 </html>
